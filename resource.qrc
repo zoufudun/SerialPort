@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/Image">
+        <file>Image/PortSta.png</file>
+        <file>Image/CLOCK.png</file>
+        <file>Image/ON.png</file>
+        <file>Image/OFF.png</file>
+        <file>Image/ONOFF/OFF1.png</file>
+        <file>Image/ONOFF/OFF2.png</file>
+        <file>Image/ONOFF/OFF3.png</file>
+        <file>Image/ONOFF/OFF4.png</file>
+        <file>Image/ONOFF/OFF5.png</file>
+        <file>Image/ONOFF/ON1.png</file>
+        <file>Image/ONOFF/ON2.png</file>
+        <file>Image/ONOFF/ON3.png</file>
+        <file>Image/ONOFF/ON4.png</file>
+        <file>Image/ONOFF/ON5.png</file>
+    </qresource>
+</RCC>
