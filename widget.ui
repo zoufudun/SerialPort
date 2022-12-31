@@ -905,7 +905,7 @@ border-color: rgb(85, 255, 127);</string>
     </property>
    </widget>
   </widget>
-  <widget class="QLabel" name="labelSerialSta">
+  <widget class="Scroll" name="labelSerialSta">
    <property name="geometry">
     <rect>
      <x>10</x>
@@ -938,6 +938,13 @@ border-color: rgb(85, 255, 127);</string>
   <zorder>layoutWidget</zorder>
   <zorder>labelSerialSta</zorder>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Scroll</class>
+   <extends>QLabel</extends>
+   <header location="global">scroll.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resource.qrc"/>
  </resources>

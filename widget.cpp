@@ -10,6 +10,7 @@
 #include <QTextCodec>
 #include <QPainter>
 #include <QResizeEvent>
+#include <scroll.h>
 
 
 Widget::Widget(QWidget *parent)
@@ -39,7 +40,8 @@ Widget::Widget(QWidget *parent)
 
     //串口状态
     QString status = "欢迎使用串口调试助手";
-    ui->labelSerialSta->setText(status);
+    //ui->labelSerialSta->setText(status);
+    ui->labelSerialSta->showScrollText(status);
     ui->labelSerialSta->setStyleSheet("color:blue");
 
     RecGroupButton=new QButtonGroup(this);
@@ -325,7 +327,9 @@ void Widget::on_pushButtonOpen_clicked()
            ui->labelSerialSta->setText("串口打开失败！！！");
            QString sm = "串口[%1] 打开失败！！！";
            QString status = sm.arg(serialPort->portName());
-           ui->labelSerialSta->setText(status);
+           //ui->labelSerialSta->setText(status);
+           ui->labelSerialSta->showScrollText(status);
+
            ui->labelSerialSta->setStyleSheet("color:yellow");
            return;
         }
@@ -338,7 +342,8 @@ void Widget::on_pushButtonOpen_clicked()
            //ui->label_status->style()->polish(ui->label_status);
            QString sm = "串口[%1] OPENED, %2, %3, %4, %5";
            QString status = sm.arg(serialPort->portName()).arg(serialPort->baudRate()).arg(serialPort->dataBits()).arg(ui->comboBoxParity->currentText()).arg(ui->comboBoxStopBits->currentText());
-           ui->labelSerialSta->setText(status);
+           //ui->labelSerialSta->setText(status);
+           ui->labelSerialSta->showScrollText(status);
            ui->labelSerialSta->setStyleSheet("color:green");
         }
 

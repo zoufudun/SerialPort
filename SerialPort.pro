@@ -13,9 +13,11 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
+    scroll.cpp \
     widget.cpp
 
 HEADERS += \
+    scroll.h \
     widget.h
 
 FORMS += \
