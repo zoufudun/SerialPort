@@ -7,13 +7,18 @@
 #include <QStatusBar>
 #include <QMainWindow>
 #include <QWidget>
+#include <QTextCodec>
+#include <QPainter>
+#include <QResizeEvent>
+
 
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
-    resize(650,550);
+
+    resize(650,650);
     setWindowTitle("SerialPort     https://github.com/zoufudun");
 
     timer = new QTimer(this);
@@ -68,6 +73,58 @@ Widget::Widget(QWidget *parent)
         }
     });
 
+    /*发送文本框信号槽*/
+    connect(ui->textEditSend, &QTextEdit::textChanged, this, [=](){
+        //获取发送框字符
+        SendTextEditStr = ui->textEditSend->document()->toPlainText();
+        if (SendTextEditStr.isEmpty())
+        {
+            return;
+        }
+        //勾选hex发送则判断是否有非法hex字符
+        if (ui->radioButtonTxHex->isChecked())
+        {
+            char ch;
+            bool flag = false;
+            uint32_t i, len;
+            //去掉无用符号
+            SendTextEditStr = SendTextEditStr.replace(' ',"");
+            SendTextEditStr = SendTextEditStr.replace(',',"");
+            SendTextEditStr = SendTextEditStr.replace('\r',"");
+            SendTextEditStr = SendTextEditStr.replace('\n',"");
+            SendTextEditStr = SendTextEditStr.replace('\t',"");
+            SendTextEditStr = SendTextEditStr.replace("0x","");
+            SendTextEditStr = SendTextEditStr.replace("0X","");
+            //判断数据合法性
+            for(i = 0, len = SendTextEditStr.length(); i < len; i++)
+            {
+                ch = SendTextEditStr.at(i).toLatin1();
+                if (ch >= '0' && ch <= '9')
+                {
+                    flag = false;
+                }
+                else if (ch >= 'a' && ch <= 'f')
+                {
+                    flag = false;
+                }
+                else if (ch >= 'A' && ch <= 'F')
+                {
+                    flag = false;
+                }
+                else
+                {
+                    flag = true;
+                }
+            }
+            if(flag)
+            {
+                QMessageBox::warning(this,"警告","输入内容包含非法16进制字符");
+            }
+        }
+        //QString转QByteArray
+        //sendByteArry = SendTextEditStr.toUtf8();
+        sendByteArry = SendTextEditStr.toLocal8Bit();
+    });
 
     /*HEX发送chexkBox信号槽*/
     connect(ui->radioButtonTxHex,QOverload<bool>::of(&QRadioButton::toggled),this,[=](bool checked){
@@ -83,10 +140,14 @@ Widget::Widget(QWidget *parent)
         {
             //从QByteArray转换为QString
             SendTextEditStr = sendByteArry.fromHex(sendByteArry);
+            //SendTextEditStr = SendTextEditStr.toLatin1();
             ui->textEditSend->document()->setPlainText(SendTextEditStr);
         }
 
     });
+
+
+
 
 //    connect(ui->radioButtonTxASCII,QOverload<bool>::of(&QRadioButton::toggled),this,[=](bool checked){
 
@@ -104,6 +165,15 @@ Widget::Widget(QWidget *parent)
 //            ui->textEditSend->document()->setPlainText(sendByteArry);
 //        }
 //    });
+
+    /*定时发送定时器*/
+    timerSend = new QTimer(this);
+    /*定时器超时信号槽*/
+    connect(timerSend, &QTimer::timeout, this, [&](){
+        SerialSendData(sendByteArry);
+    });
+
+    ui->spinBoxTime->setMinimum(0);
 
     // 样式表
     this->setStyleSheet(//正常状态样式
@@ -377,7 +447,6 @@ void Widget::RecvData(void)
         QByteArray recBuf;
         recBuf = serialPort->readAll();
         QString myStrTemp ;//= QString::fromLocal8Bit(recBuf);
-        QString mtStrPrefix;
         if(!recBuf.isEmpty())
         {
             switch (RecGroupButton->checkedId())
@@ -438,12 +507,18 @@ void Widget::RecvData(void)
 void Widget::on_pushButtonClrRec_clicked()
 {
     ui->textEditRecv->clear();
+    ui->labelRecvBytes->clear();
+    RecvBytes = 0;
+    ui->labelRecvBytes->setText(QString::number(RecvBytes));
 }
 
 
 void Widget::on_pushButtonClrTx_clicked()
 {
     ui->textEditSend->clear();
+    ui->labelSendBytes->clear();
+    TxBytes = 0;
+    ui->labelSendBytes->setText(QString::number(TxBytes));
 }
 
 
@@ -461,59 +536,59 @@ void Widget::on_pushButtonClrCount_clicked()
 
 
 
-/*
-void Widget::on_pushButtonTx_clicked()
-{
-    QString str = ui->textEditSend->toPlainText();
 
-    switch (TxGroupButton->checkedId())
-    {
-    case 0:
-        {
-            QByteArray byteArray;
-            if(ui->checkBoxTxNewLine->isChecked())
-            {
-               //byteArray =( ui->textEditSend->toPlainText() + '\r').toLocal8Bit();
-               byteArray = (str + '\r').toLocal8Bit();
-            }
-            else
-            {
-                //byteArray = ui->textEditSend->toPlainText().toLocal8Bit();
-                byteArray = (str).toLocal8Bit();
-            }
-            serialPort->write(byteArray);
-            TxBytes += byteArray.length();
-            ui->labelSendBytes->setText(QString::number(TxBytes));
+//void Widget::on_pushButtonTx_clicked()
+//{
+//    QString str = ui->textEditSend->toPlainText();
 
-        }
+//    switch (TxGroupButton->checkedId())
+//    {
+//    case 0:
+//        {
+//            QByteArray byteArray;
+//            if(ui->checkBoxTxNewLine->isChecked())
+//            {
+//               //byteArray =( ui->textEditSend->toPlainText() + '\r').toLocal8Bit();
+//               byteArray = (str + '\r').toLocal8Bit();
+//            }
+//            else
+//            {
+//                //byteArray = ui->textEditSend->toPlainText().toLocal8Bit();
+//                byteArray = (str).toLocal8Bit();
+//            }
+//            serialPort->write(byteArray);
+//            TxBytes += byteArray.length();
+//            ui->labelSendBytes->setText(QString::number(TxBytes));
 
-        break;
-    case 1:
-        {
-            //QString str = ui->textEditSend->toPlainText();
+//        }
 
-            QByteArray text;
-            if(ui->checkBoxTxNewLine->isChecked())
-            {
-               qDebug()<<"lyun";
-               text = QByteArray::fromHex(( str + '\r').toLocal8Bit());////获取文本框的字符串，转换成字流
-            }
-            else
-            {
-               text = QByteArray::fromHex(str.toLocal8Bit());////获取文本框的字符串，转换成字流;
-            }
+//        break;
+//    case 1:
+//        {
+//            //QString str = ui->textEditSend->toPlainText();
 
-            //QByteArray text=QByteArray::fromHex(str.toLatin1()); //获取文本框的字符串，转换成字流
-            //qDebug()<<text.data();            // returns 字符串
-            serialPort->write(text);
-        }
+//            QByteArray text;
+//            if(ui->checkBoxTxNewLine->isChecked())
+//            {
+//               qDebug()<<"lyun";
+//               text = QByteArray::fromHex(( str + '\r').toLocal8Bit());////获取文本框的字符串，转换成字流
+//            }
+//            else
+//            {
+//               text = QByteArray::fromHex(str.toLocal8Bit());////获取文本框的字符串，转换成字流;
+//            }
 
-        break;
-    default:
-        break;
-    }
-}
-*/
+//            //QByteArray text=QByteArray::fromHex(str.toLatin1()); //获取文本框的字符串，转换成字流
+//            //qDebug()<<text.data();            // returns 字符串
+//            serialPort->write(text);
+//        }
+
+//        break;
+//    default:
+//        break;
+//    }
+//}
+
 
 void Widget::on_pushButtonTx_clicked()
 {
@@ -540,14 +615,13 @@ void Widget::SerialSendData(QByteArray baData)
             switch (TxGroupButton->checkedId())
             {
             case 1:// hex发送
-            //if (ui->radioButtonTxHex->isChecked())  // hex发送
             {
                 /*获取hex格式的数据*/
                 baData = baData.fromHex(baData);
                 /*发送hex数据*/
                 serialPort->write(baData);
                 /*是否显示时间戳*/
-                if (ui->checkBoxShowTime->isChecked())
+                if (ui->checkBoxShowTxTime->isChecked())
                 {
                     QString strdata = baData.toHex(' ').trimmed().toUpper();
                     ui->textEditRecv->setTextColor(QColor("blue"));
@@ -557,12 +631,12 @@ void Widget::SerialSendData(QByteArray baData)
                 }
             }
                 break;
-            case 0:     //ascii发送
+            case 0://ascii发送
             {
                 /*发送ascii数据*/
                 serialPort->write(baData);
                 /*是否显示时间戳*/
-                if (ui->checkBoxShowTime->isChecked())
+                if (ui->checkBoxShowTxTime->isChecked())
                 {
                     QString strdata = QString(baData);
                     ui->textEditRecv->setTextColor(QColor("red"));
@@ -585,72 +659,74 @@ void Widget::SerialSendData(QByteArray baData)
             QMessageBox::warning(this, "警告", "数据为空");
         }
 }
+
 void Widget::on_textEditRecv_textChanged()
 {
     // 将光标焦点移动至文末为了显示最新的内容
-    QTextCursor cursor = ui->textEditRecv->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    ui->textEditRecv->setTextCursor(cursor);
+//    QTextCursor cursor = ui->textEditRecv->textCursor();
+//    cursor.movePosition(QTextCursor::End);
+//    ui->textEditRecv->setTextCursor(cursor);
+    ui->textEditRecv->moveCursor(QTextCursor::End);
 }
 
 void Widget::on_textEditSend_textChanged()
 {
 
-        QString SendTextEditStr = ui->textEditSend->document()->toPlainText();
-        if (SendTextEditStr.isEmpty())
-        {
-            return;
-        }
-        //勾选hex发送则判断是否有非法hex字符
-        if (ui->radioButtonTxHex->isChecked())
-        {
-            char ch;
-            bool flag = false;
-            uint32_t i, len;
-            //去掉无用符号
-            SendTextEditStr = SendTextEditStr.replace(' ',"");
-            SendTextEditStr = SendTextEditStr.replace(',',"");
-            SendTextEditStr = SendTextEditStr.replace('\r',"");
-            SendTextEditStr = SendTextEditStr.replace('\n',"");
-            SendTextEditStr = SendTextEditStr.replace('\t',"");
-            SendTextEditStr = SendTextEditStr.replace("0x","");
-            SendTextEditStr = SendTextEditStr.replace("0X","");
-            //判断数据合法性
-            for(i = 0, len = SendTextEditStr.length(); i < len; i++)
-            {
-                ch = SendTextEditStr.at(i).toLatin1();
-                if (ch >= '0' && ch <= '9')
-                {
-                    flag = false;
-                }
-                else if (ch >= 'a' && ch <= 'f')
-                {
-                    flag = false;
-                }
-                else if (ch >= 'A' && ch <= 'F')
-                {
-                    flag = false;
-                }
-                else
-                {
-                    flag = true;
-                }
-            }
-            if(flag)
-            {
-                QMessageBox::warning(this,"警告","输入内容包含非法16进制字符");
-            }
-        }
-        //QString转QByteArray
-        //sendByteArry = SendTextEditStr.toUtf8();
-        sendByteArry = SendTextEditStr.toLocal8Bit();
+//        QString SendTextEditStr = ui->textEditSend->document()->toPlainText();
+//        if (SendTextEditStr.isEmpty())
+//        {
+//            return;
+//        }
+//        //勾选hex发送则判断是否有非法hex字符
+//        if (ui->radioButtonTxHex->isChecked())
+//        {
+//            char ch;
+//            bool flag = false;
+//            uint32_t i, len;
+//            //去掉无用符号
+//            SendTextEditStr = SendTextEditStr.replace(' ',"");
+//            SendTextEditStr = SendTextEditStr.replace(',',"");
+//            SendTextEditStr = SendTextEditStr.replace('\r',"");
+//            SendTextEditStr = SendTextEditStr.replace('\n',"");
+//            SendTextEditStr = SendTextEditStr.replace('\t',"");
+//            SendTextEditStr = SendTextEditStr.replace("0x","");
+//            SendTextEditStr = SendTextEditStr.replace("0X","");
+//            //判断数据合法性
+//            for(i = 0, len = SendTextEditStr.length(); i < len; i++)
+//            {
+//                ch = SendTextEditStr.at(i).toLatin1();
+//                if (ch >= '0' && ch <= '9')
+//                {
+//                    flag = false;
+//                }
+//                else if (ch >= 'a' && ch <= 'f')
+//                {
+//                    flag = false;
+//                }
+//                else if (ch >= 'A' && ch <= 'F')
+//                {
+//                    flag = false;
+//                }
+//                else
+//                {
+//                    flag = true;
+//                }
+//            }
+//            if(flag)
+//            {
+//                QMessageBox::warning(this,"警告","输入内容包含非法16进制字符");
+//            }
+//        }
+//        //QString转QByteArray
+//        //sendByteArry = SendTextEditStr.toUtf8();
+//        sendByteArry = SendTextEditStr.toLocal8Bit();
 }
 
 
 
 void Widget::on_radioButtonTxHex_clicked()
 {
-//    qDebug() << "狂插吕赟淫穴";
+
 //    if (SendTextEditStr.isEmpty())
 //    {
 //        return;
@@ -666,7 +742,7 @@ void Widget::on_radioButtonTxHex_clicked()
 
 void Widget::on_radioButtonTxASCII_clicked()
 {
-//    qDebug() << "狂插肖霞淫穴";
+
 //    if (SendTextEditStr.isEmpty())
 //    {
 //        return;
@@ -677,4 +753,56 @@ void Widget::on_radioButtonTxASCII_clicked()
 //    SendTextEditStr = sendByteArry.fromHex(sendByteArry);
 //    ui->textEditSend->document()->setPlainText(SendTextEditStr);
 }
+
+
+void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
+{
+    int time;
+    /*判断串口是否打开*/
+    if (false == isSerialOpen)
+    {
+        if (ui->checkBoxRepeatTx->isChecked())
+        {
+            QMessageBox::information(this, "提示", "串口未打开");
+            ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+        }
+        return;
+    }
+    /*判断是否有数据*/
+    if (ui->textEditSend->document()->isEmpty() == true)
+    {
+        if (ui->checkBoxRepeatTx->isChecked())
+        {
+            QMessageBox::warning(this, "警告", "数据为空");
+            ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+        }
+        return;
+    }
+    /*判断勾选状态*/
+    if (arg1 == Qt::Checked)
+    {
+        /*获取设定时间*/
+        time = ui->spinBoxTime->text().toInt();
+        if (time > 0)
+        {
+            timerSend->start(time);
+            ui->spinBoxTime->setEnabled(false);
+        }
+        else
+        {
+            QMessageBox::warning(this, "警告", "时间必须大于0");
+            ui->spinBoxTime->setEnabled(true);
+            ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+        }
+
+    }
+    else
+    {
+        /*停止发送*/
+        timerSend->stop();
+        ui->spinBoxTime->setEnabled(true);
+        //ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+    }
+}
+
 

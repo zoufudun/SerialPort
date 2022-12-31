@@ -2,6 +2,7 @@ QT       += core gui
 QT       += serialport
 
 
+greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17

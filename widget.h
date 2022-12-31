@@ -27,6 +27,7 @@ public:
 private:
     Ui::Widget *ui;
     QTimer *timer;
+    QTimer *timerSend;
     QStringList lastPortStringList;
     QSerialPort *serialPort;
     QStringList serialDevice;
@@ -37,6 +38,11 @@ private:
     long RecvBytes;
     long TxBytes;
     bool isSerialOpen;
+
+public:
+    void setDelay(int ms,int pixelSize);  //设置滚动延迟,多少ms滚动多少像素点
+
+    void setText2(QString text,QRgb textColor,float speed=0.70,int blankSuffix=20); //设置字体,调用该函数后,将会自动启动定时器来滚动字幕
 
 
 private slots:
@@ -52,5 +58,6 @@ private slots:
     void on_radioButtonTxHex_clicked();
     void on_radioButtonTxASCII_clicked();
     void SerialSendData(QByteArray baData);
+    void on_checkBoxRepeatTx_stateChanged(int arg1);
 };
 #endif // WIDGET_H

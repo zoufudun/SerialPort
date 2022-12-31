@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>648</width>
-    <height>544</height>
+    <height>642</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -451,7 +451,7 @@ border-color: rgb(85, 255, 127);</string>
     <rect>
      <x>230</x>
      <y>390</y>
-     <width>311</width>
+     <width>391</width>
      <height>81</height>
     </rect>
    </property>
@@ -475,7 +475,7 @@ border-color: rgb(85, 255, 127);</string>
      <x>210</x>
      <y>370</y>
      <width>421</width>
-     <height>111</height>
+     <height>151</height>
     </rect>
    </property>
    <property name="title">
@@ -484,8 +484,8 @@ border-color: rgb(85, 255, 127);</string>
    <widget class="QPushButton" name="pushButtonTx">
     <property name="geometry">
      <rect>
-      <x>340</x>
-      <y>20</y>
+      <x>260</x>
+      <y>110</y>
       <width>71</width>
       <height>31</height>
      </rect>
@@ -498,13 +498,23 @@ border-color: rgb(85, 255, 127);</string>
     <property name="geometry">
      <rect>
       <x>340</x>
-      <y>60</y>
+      <y>110</y>
       <width>71</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>清空发送区</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>110</y>
+      <width>231</width>
+      <height>31</height>
+     </rect>
     </property>
    </widget>
   </widget>
@@ -514,13 +524,13 @@ border-color: rgb(85, 255, 127);</string>
      <x>10</x>
      <y>370</y>
      <width>171</width>
-     <height>111</height>
+     <height>151</height>
     </rect>
    </property>
    <property name="title">
     <string>发送设置</string>
    </property>
-   <widget class="QSpinBox" name="spinBox">
+   <widget class="QSpinBox" name="spinBoxTime">
     <property name="geometry">
      <rect>
       <x>90</x>
@@ -582,7 +592,7 @@ border-color: rgb(85, 255, 127);</string>
      </rect>
     </property>
     <property name="text">
-     <string>定时发送</string>
+     <string>自动发送</string>
     </property>
    </widget>
    <widget class="QCheckBox" name="checkBoxTxNewLine">
@@ -597,6 +607,69 @@ border-color: rgb(85, 255, 127);</string>
     <property name="text">
      <string>发送新行</string>
     </property>
+   </widget>
+   <widget class="QCheckBox" name="checkBoxShowTxTime">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>80</y>
+      <width>81</width>
+      <height>18</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>时间戳</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>12</x>
+      <y>111</y>
+      <width>36</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>发送选项</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBoxSendType">
+    <property name="geometry">
+     <rect>
+      <x>70</x>
+      <y>111</y>
+      <width>85</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>63</width>
+      <height>22</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>100</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <item>
+     <property name="text">
+      <string>单项发送</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>多项发送</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>协议发送</string>
+     </property>
+    </item>
    </widget>
   </widget>
   <widget class="QLabel" name="label_3">
@@ -651,19 +724,6 @@ border-color: rgb(85, 255, 127);</string>
     <string>波特率：</string>
    </property>
   </widget>
-  <widget class="QLabel" name="labelSerialSta">
-   <property name="geometry">
-    <rect>
-     <x>10</x>
-     <y>510</y>
-     <width>271</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>串口关闭</string>
-   </property>
-  </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
@@ -696,8 +756,8 @@ border-color: rgb(85, 255, 127);</string>
   <widget class="QPushButton" name="pushButtonClrCount">
    <property name="geometry">
     <rect>
-     <x>548</x>
-     <y>509</y>
+     <x>550</x>
+     <y>610</y>
      <width>80</width>
      <height>21</height>
     </rect>
@@ -706,11 +766,11 @@ border-color: rgb(85, 255, 127);</string>
     <string>清空计数</string>
    </property>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>301</x>
-     <y>510</y>
+     <x>300</x>
+     <y>610</y>
      <width>111</width>
      <height>20</height>
     </rect>
@@ -741,11 +801,11 @@ border-color: rgb(85, 255, 127);</string>
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>420</x>
-     <y>510</y>
+     <y>610</y>
      <width>121</width>
      <height>21</height>
     </rect>
@@ -770,13 +830,103 @@ border-color: rgb(85, 255, 127);</string>
     </item>
    </layout>
   </widget>
+  <widget class="QGroupBox" name="groupBox_6">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>530</y>
+     <width>621</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>文件发送</string>
+   </property>
+   <widget class="QProgressBar" name="progressBar">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>91</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit">
+    <property name="geometry">
+     <rect>
+      <x>110</x>
+      <y>30</y>
+      <width>231</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonOpenFile">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>30</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>打开文件</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonSendFile">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>30</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>发送文件</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButtonSendFile_2">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>30</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>停止发送</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QLabel" name="labelSerialSta">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>610</y>
+     <width>271</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>欢迎</string>
+   </property>
+  </widget>
+  <zorder>groupBox_5</zorder>
+  <zorder>textEditSend</zorder>
+  <zorder>groupBox_6</zorder>
+  <zorder>layoutWidget</zorder>
   <zorder>pushButtonClrCount</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>groupBox</zorder>
-  <zorder>labelSerialSta</zorder>
   <zorder>groupBox_2</zorder>
   <zorder>groupBox_3</zorder>
-  <zorder>groupBox_5</zorder>
   <zorder>groupBox_4</zorder>
   <zorder>label_3</zorder>
   <zorder>label_4</zorder>
@@ -785,8 +935,8 @@ border-color: rgb(85, 255, 127);</string>
   <zorder>label</zorder>
   <zorder>checkBoxWrap</zorder>
   <zorder>textEditRecv</zorder>
-  <zorder>textEditSend</zorder>
   <zorder>layoutWidget</zorder>
+  <zorder>labelSerialSta</zorder>
  </widget>
  <resources>
   <include location="resource.qrc"/>
