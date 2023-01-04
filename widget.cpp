@@ -455,13 +455,14 @@ void Widget::RecvData(void)
                     {
                         /*ascii显示*/
                         myStrTemp = QString::fromLocal8Bit(recBuf);
-                        ui->textEditRecv->setTextColor(QColor(Qt::magenta));
+                        ui->textEditRecv->setTextColor(QColor(Qt::red));
                         ui->checkBoxHexSpace->setChecked(false);
                         //如果换行被勾选将会在每次接收显示前换行,另外判断是不是为空，确保第一行不会先给显示个回车符
                         if((ui->checkBoxWrap->isChecked())&&(!ui->textEditRecv->toPlainText().isEmpty()))
                         {
                             ui->textEditRecv->insertPlainText("\n");
                         }
+
                     }
                     break;
                 case 1:
@@ -490,11 +491,15 @@ void Widget::RecvData(void)
             /*是否显示时间戳*/
             if (ui->checkBoxShowTime->isChecked())
             {
-                myStrTemp = QString("[%1] --> \r\nRX : %2").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")).arg(myStrTemp);
-                ui->textEditRecv->append(myStrTemp);
+                //myStrTemp = QString("[%1] --> \r\nRX : %2").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")).arg(myStrTemp);
+                //ui->textEditRecv->append(myStrTemp);
+                ui->textEditRecv->append( QString("[%1] --> \r\nRX : ").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")));
+                ui->textEditRecv->setTextColor(QColor(Qt::black));
+                ui->textEditRecv->insertPlainText(myStrTemp);
             }
             else
             {
+                ui->textEditRecv->setTextColor(QColor(Qt::darkRed));
                 ui->textEditRecv->insertPlainText(myStrTemp);
             }
 
@@ -628,7 +633,7 @@ void Widget::SerialSendData(QByteArray baData)
                     QString strdata = baData.toHex(' ').trimmed().toUpper();
                     ui->textEditRecv->setTextColor(QColor("blue"));
                     ui->textEditRecv->append(QString("[%1]-->\r\nTX:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")));
-                    ui->textEditRecv->setTextColor(QColor("black"));
+                    ui->textEditRecv->setTextColor(QColor(Qt::green));
                     ui->textEditRecv->insertPlainText(strdata);
                 }
             }
@@ -649,7 +654,7 @@ void Widget::SerialSendData(QByteArray baData)
                     //QString strdata = QString(baData);
                     ui->textEditRecv->setTextColor(QColor("red"));
                     ui->textEditRecv->append(QString("[%1]-->\r\nTX: ").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")));
-                    ui->textEditRecv->setTextColor(QColor("black"));
+                    ui->textEditRecv->setTextColor(QColor(Qt::green));
                     ui->textEditRecv->insertPlainText(strdata);
                 }
             }
