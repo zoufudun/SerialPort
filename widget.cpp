@@ -19,7 +19,7 @@ Widget::Widget(QWidget *parent)
     ui->setupUi(this);
 
     resize(650,650);
-    setWindowTitle("SerialPort     https://github.com/zoufudun");
+    setWindowTitle("SerialPort V1.0    https://github.com/zoufudun");
 
     timer = new QTimer(this);
 
@@ -139,7 +139,9 @@ Widget::Widget(QWidget *parent)
         else
         {
             //从QByteArray转换为QString
-            SendTextEditStr = sendByteArry.fromHex(sendByteArry);
+            //SendTextEditStr = sendByteArry.fromHex(sendByteArry);
+            sendByteArry = sendByteArry.fromHex(sendByteArry);
+            SendTextEditStr = QString::fromLocal8Bit(sendByteArry);
             //SendTextEditStr = SendTextEditStr.toLatin1();
             ui->textEditSend->document()->setPlainText(SendTextEditStr);
         }
@@ -202,8 +204,6 @@ Widget::Widget(QWidget *parent)
                         "border-radius:10px;"
                         "}"
                         );
-
-
 
 }
 
@@ -607,17 +607,19 @@ void Widget::SerialSendData(QByteArray baData)
 {
     if (baData.isEmpty() != true)
     {
-            /*是否加回车换行*/
-            if (ui->checkBoxTxNewLine->isChecked())
-            {
-                baData.append("\r\n");
-            }
+
             switch (TxGroupButton->checkedId())
             {
             case 1:// hex发送
             {
+
                 /*获取hex格式的数据*/
                 baData = baData.fromHex(baData);
+                /*是否加回车换行*/
+                if (ui->checkBoxTxNewLine->isChecked())
+                {
+                    baData.append("\r\n");
+                }
                 /*发送hex数据*/
                 serialPort->write(baData);
                 /*是否显示时间戳*/
@@ -633,12 +635,18 @@ void Widget::SerialSendData(QByteArray baData)
                 break;
             case 0://ascii发送
             {
+                /*是否加回车换行*/
+                if (ui->checkBoxTxNewLine->isChecked())
+                {
+                    baData.append("\r\n");
+                }
                 /*发送ascii数据*/
                 serialPort->write(baData);
                 /*是否显示时间戳*/
                 if (ui->checkBoxShowTxTime->isChecked())
                 {
-                    QString strdata = QString(baData);
+                    QString strdata = QString::fromLocal8Bit(baData);
+                    //QString strdata = QString(baData);
                     ui->textEditRecv->setTextColor(QColor("red"));
                     ui->textEditRecv->append(QString("[%1]-->\r\nTX: ").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")));
                     ui->textEditRecv->setTextColor(QColor("black"));
