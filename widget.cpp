@@ -21,11 +21,26 @@ Widget::Widget(QWidget *parent)
     resize(650,650);
     setWindowTitle("SerialPort V1.0    https://github.com/zoufudun");
 
+    RecvBytes = 0;
+    TxBytes= 0;
+    isSerialOpen = false;
+
     timer = new QTimer(this);
 
     timer->start(500);
 
     connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);
+
+    /*定时发送定时器*/
+    timerSend = new QTimer(this);
+    /*定时器超时信号槽*/
+    connect(timerSend, &QTimer::timeout, this, [&](){
+        SerialSendData(sendByteArry);
+    });
+
+    ui->spinBoxTime->setMinimum(0);
+    ui->spinBoxTime->setValue(1000);
+    ui->spinBoxTime->setSingleStep(10);
 
     ui->comboBoxBaudRate->setCurrentIndex(5);
     ui->comboBoxDataBits->setCurrentIndex(3);
@@ -52,9 +67,9 @@ Widget::Widget(QWidget *parent)
     TxGroupButton->addButton(ui->radioButtonTxHex,1);
     ui->radioButtonTxASCII->setChecked(true);
 
-    RecvBytes = 0;
-    TxBytes= 0;
-    isSerialOpen = false;
+    //ui->textEditSend->setText("欢迎使用SerialPortPHD");
+
+    ui->checkBoxTxNewLine->setChecked(true);
 
     ui->label_status->setPixmap(QPixmap(":/Image/Image/OFF.png"));
 
@@ -79,6 +94,9 @@ Widget::Widget(QWidget *parent)
         SendTextEditStr = ui->textEditSend->document()->toPlainText();
         if (SendTextEditStr.isEmpty())
         {
+            //timerSend->stop();
+            //ui->spinBoxTime->setEnabled(true);
+            sendByteArry.clear();
             return;
         }
         //勾选hex发送则判断是否有非法hex字符
@@ -168,14 +186,7 @@ Widget::Widget(QWidget *parent)
 //        }
 //    });
 
-    /*定时发送定时器*/
-    timerSend = new QTimer(this);
-    /*定时器超时信号槽*/
-    connect(timerSend, &QTimer::timeout, this, [&](){
-        SerialSendData(sendByteArry);
-    });
 
-    ui->spinBoxTime->setMinimum(0);
 
     // 样式表
     this->setStyleSheet(//正常状态样式
@@ -633,7 +644,7 @@ void Widget::SerialSendData(QByteArray baData)
                     QString strdata = baData.toHex(' ').trimmed().toUpper();
                     ui->textEditRecv->setTextColor(QColor("blue"));
                     ui->textEditRecv->append(QString("[%1]-->\r\nTX:").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")));
-                    ui->textEditRecv->setTextColor(QColor(Qt::green));
+                    ui->textEditRecv->setTextColor(QColor(Qt::darkGreen));
                     ui->textEditRecv->insertPlainText(strdata);
                 }
             }
@@ -666,11 +677,27 @@ void Widget::SerialSendData(QByteArray baData)
             //更新发送计数
             TxBytes += baData.length();
             ui->labelSendBytes->setText(QString::number(TxBytes));
-        }
-        else
+    }
+    else
+    {
+        if (ui->checkBoxTxNewLine->isChecked())
         {
-            QMessageBox::warning(this, "警告", "数据为空");
+            baData.append("\r\n");
         }
+        serialPort->write(baData);
+
+        /*是否显示时间戳*/
+        if (ui->checkBoxShowTxTime->isChecked())
+        {
+            QString strdata = QString::fromLocal8Bit(baData);
+            //QString strdata = QString(baData);
+            ui->textEditRecv->setTextColor(QColor("red"));
+            ui->textEditRecv->append(QString("[%1]-->\r\nTX: ").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss:zzz")));
+            ui->textEditRecv->setTextColor(QColor(Qt::green));
+            ui->textEditRecv->insertPlainText(strdata);
+        }
+        //QMessageBox::warning(this, "警告", "数据为空");
+    }
 }
 
 void Widget::on_textEditRecv_textChanged()
@@ -684,7 +711,6 @@ void Widget::on_textEditRecv_textChanged()
 
 void Widget::on_textEditSend_textChanged()
 {
-
 //        QString SendTextEditStr = ui->textEditSend->document()->toPlainText();
 //        if (SendTextEditStr.isEmpty())
 //        {
@@ -739,7 +765,6 @@ void Widget::on_textEditSend_textChanged()
 
 void Widget::on_radioButtonTxHex_clicked()
 {
-
 //    if (SendTextEditStr.isEmpty())
 //    {
 //        return;
@@ -755,7 +780,6 @@ void Widget::on_radioButtonTxHex_clicked()
 
 void Widget::on_radioButtonTxASCII_clicked()
 {
-
 //    if (SendTextEditStr.isEmpty())
 //    {
 //        return;
@@ -781,16 +805,16 @@ void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
         }
         return;
     }
-    /*判断是否有数据*/
-    if (ui->textEditSend->document()->isEmpty() == true)
-    {
-        if (ui->checkBoxRepeatTx->isChecked())
-        {
-            QMessageBox::warning(this, "警告", "数据为空");
-            ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
-        }
-        return;
-    }
+//    /*判断是否有数据*/
+//    if (ui->textEditSend->document()->isEmpty() == true)
+//    {
+//        if (ui->checkBoxRepeatTx->isChecked())
+//        {
+//            QMessageBox::warning(this, "警告", "数据为空");
+//            ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+//        }
+//        return;
+//    }
     /*判断勾选状态*/
     if (arg1 == Qt::Checked)
     {
@@ -807,7 +831,6 @@ void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
             ui->spinBoxTime->setEnabled(true);
             ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
         }
-
     }
     else
     {
