@@ -10,6 +10,8 @@
 #include <QTextCodec>
 #include <QPainter>
 #include <QResizeEvent>
+#include <QFileDialog>
+#include <QFile>
 
 
 Widget::Widget(QWidget *parent)
@@ -24,6 +26,7 @@ Widget::Widget(QWidget *parent)
     RecvBytes = 0;
     TxBytes= 0;
     isSerialOpen = false;
+    sendTextChangedFlag = false;
 
     timer = new QTimer(this);
 
@@ -52,6 +55,12 @@ Widget::Widget(QWidget *parent)
 
     connect(serialPort,SIGNAL(readyRead()),this,SLOT(RecvData()));
 
+    //选中发送的历史数据的信号槽：将选中的发送历史数据填入到发送文本框中。
+    connect(ui->comboBoxSendData,&QComboBox::textActivated,this,[&](const QString &text){
+        ui->textEditSend->clear();
+        ui->textEditSend->setText(text);
+    });
+
     //串口状态
     QString status = "欢迎使用串口调试助手";
     ui->labelSerialSta->setText(status);
@@ -76,7 +85,7 @@ Widget::Widget(QWidget *parent)
     qint32 CustomBandrate = ui->comboBoxBaudRate->currentText().toUInt();
     serialPort->setBaudRate(CustomBandrate, QSerialPort::AllDirections);
 
-
+    /*波特率支持自定义*/
     connect(ui->comboBoxBaudRate, QOverload<int>::of(&QComboBox::currentIndexChanged),[&](int index){
         if (index == 6)
         {
@@ -88,8 +97,9 @@ Widget::Widget(QWidget *parent)
         }
     });
 
-    /*发送文本框信号槽*/
+    /*发送文本框信号槽：发送文本框内容发生变化的信号槽*/
     connect(ui->textEditSend, &QTextEdit::textChanged, this, [=](){
+        sendTextChangedFlag = true;
         //获取发送框字符
         SendTextEditStr = ui->textEditSend->document()->toPlainText();
         if (SendTextEditStr.isEmpty())
@@ -612,6 +622,11 @@ void Widget::on_pushButtonTx_clicked()
     {
         /*将发送框数据发送*/
         SerialSendData(sendByteArry);
+        if(sendTextChangedFlag == true)
+        {
+            ui->comboBoxSendData->addItem(SendTextEditStr);
+            sendTextChangedFlag = false;
+        }
     }
     else
     {
@@ -841,4 +856,35 @@ void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
     }
 }
 
+
+
+void Widget::on_pushButtonOpenFile_clicked()
+{
+    QString curPath = QDir::currentPath();
+    QString filter = "文本文件(*.txt);;二进制文件(*.bin *.dat);;所有文件(*.*)";
+    QString filePath = QFileDialog::getOpenFileName(this,"打开文件",curPath,filter);
+
+    ui->lineEditFilePath->clear();
+    ui->lineEditFilePath->setText(filePath);
+
+    QFile file(filePath);
+    if (!file.exists())
+    {
+        QMessageBox::warning(this,"警告","文件不存在");
+        return;
+    }
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QMessageBox::warning(this,"警告","文件打开失败");
+        return;
+    }
+
+    file.open(QIODevice::ReadOnly);
+
+    QByteArray fileByteArray = file.readAll();
+    ui->textEditSend->clear();
+    ui->textEditSend->append(fileByteArray);
+    file.close();
+
+}
 
