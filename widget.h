@@ -28,6 +28,7 @@ private:
     Ui::Widget *ui;
     QTimer *timer;
     QTimer *timerSend;
+    QTimer *timerFileSend;
     QStringList lastPortStringList;
     QSerialPort *serialPort;
     QStringList serialDevice;
@@ -35,14 +36,25 @@ private:
     QButtonGroup *TxGroupButton;
     QByteArray sendByteArry;
     QString SendTextEditStr;
+    QString fileText;
+    bool isSendFile;
+    int FrameCount;
+    int FrameLen;
+    int lastFrameLen;
+    int FrameNumber;
+    int FrameGap;
+    int ProgressBarValue;
+    int ProgressBarStep;
     long RecvBytes;
     long TxBytes;
     bool isSerialOpen;
+    bool sendTextChangedFlag;
 
 public:
     void setDelay(int ms,int pixelSize);  //设置滚动延迟,多少ms滚动多少像素点
 
     void setText2(QString text,QRgb textColor,float speed=0.70,int blankSuffix=20); //设置字体,调用该函数后,将会自动启动定时器来滚动字幕
+    void SendFile();
 
 
 private slots:
@@ -59,5 +71,9 @@ private slots:
     void on_radioButtonTxASCII_clicked();
     void SerialSendData(QByteArray baData);
     void on_checkBoxRepeatTx_stateChanged(int arg1);
+    void on_pushButtonOpenFile_clicked();
+    void on_pushButtonSaveFile_clicked();
+    void on_pushButtonSendFile_clicked();
+    void File_TimerSend(void);
 };
 #endif // WIDGET_H

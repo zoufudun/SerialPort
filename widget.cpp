@@ -12,6 +12,10 @@
 #include <QResizeEvent>
 #include <QFileDialog>
 #include <QFile>
+#include <QDataStream>
+#include <QTextStream>
+#include <QMimeData>
+#include <QMimeDatabase>
 
 
 Widget::Widget(QWidget *parent)
@@ -20,7 +24,7 @@ Widget::Widget(QWidget *parent)
 {
     ui->setupUi(this);
 
-    resize(650,650);
+    resize(650,700);
     setWindowTitle("SerialPort V1.0    https://github.com/zoufudun");
 
     RecvBytes = 0;
@@ -28,11 +32,22 @@ Widget::Widget(QWidget *parent)
     isSerialOpen = false;
     sendTextChangedFlag = false;
 
+    isSendFile = false;
+    FrameCount = 0;
+    FrameLen = 0;
+    lastFrameLen = 0;
+    FrameNumber = 0;
+    FrameGap = 0;
+    ProgressBarValue = 0;
+
     timer = new QTimer(this);
 
     timer->start(500);
 
     connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);
+
+    timerFileSend = new QTimer(this);
+    connect(timerFileSend,SIGNAL(timeout()),this,SLOT(File_TimerSend()));
 
     /*定时发送定时器*/
     timerSend = new QTimer(this);
@@ -863,7 +878,7 @@ void Widget::on_pushButtonOpenFile_clicked()
     QString curPath = QDir::currentPath();
     QString filter = "文本文件(*.txt);;二进制文件(*.bin *.dat);;所有文件(*.*)";
     QString filePath = QFileDialog::getOpenFileName(this,"打开文件",curPath,filter);
-
+    QFileInfo fileinfo(filePath);
     ui->lineEditFilePath->clear();
     ui->lineEditFilePath->setText(filePath);
 
@@ -879,12 +894,198 @@ void Widget::on_pushButtonOpenFile_clicked()
         return;
     }
 
-    file.open(QIODevice::ReadOnly);
 
-    QByteArray fileByteArray = file.readAll();
-    ui->textEditSend->clear();
-    ui->textEditSend->append(fileByteArray);
+    /*判断文件类型*/
+    int type = 0;
+    QMimeDatabase db;
+    QMimeType mime = db.mimeTypeForFile(filePath);
+    if (mime.name().startsWith("text/"))
+    {
+        type = 1;	//文本文件
+    }
+    else if (mime.name().startsWith("application/"))
+    {
+        type = 2;	//二进制文件
+    }
+
+    /*读取文件*/
+    switch(type)
+    {
+        case 1:
+        {
+            //QIODevice读取普通文本
+            QByteArray data = file.readAll();
+            fileText =  data;
+            file.close();
+            if (data.isEmpty())
+            {
+                QMessageBox::information(this, "提示", "文件内容空");
+                return;
+            }
+        }
+        break;
+        case 2:
+        {
+            int filelen = fileinfo.size();
+            QVector<char> cBuf(filelen);//储存读出数据
+            //使用QDataStream读取二进制文件
+            QDataStream datain(&file);
+            datain.readRawData(&cBuf[0],filelen);
+            file.close();
+            //char数组转QString
+            fileText = QString::fromLocal8Bit(&cBuf[0],filelen);
+        }
+        break;
+    }
+
+    //显示文件大小信息
+    QString info = QString("%1%2").arg("文件大小为：").arg(fileText.length());
+    ui->lineEditFileSize->clear();
+    ui->lineEditFileSize->setText(info);
+    //显示文件内容
+    if (ui->radioButtonTxHex->isChecked())
+    {
+        ui->textEditSend->setPlainText(fileText.toUtf8().toHex(' ').toUpper());
+    }
+    else
+    {
+        ui->textEditSend->insertPlainText(fileText);
+    }
+    //设置显示焦点在最顶部
+    ui->textEditRecv->moveCursor(QTextCursor::Start,QTextCursor::MoveAnchor);
+    /*标记有文件发送*/
+    isSendFile = true;
+    FrameCount = 0;
+    ProgressBarValue = 0;
+
+//    QByteArray fileByteArray = file.readAll();
+//    ui->textEditSend->clear();
+//    ui->textEditSend->append(fileByteArray);
+//    file.close();
+
+}
+
+
+void Widget::on_pushButtonSaveFile_clicked()
+{
+    QString dataRx = ui->textEditRecv->toPlainText();
+    if(dataRx.isEmpty())
+    {
+        QMessageBox::information(this,"提示","数据内容为空");
+        return;
+    }
+
+    QString curPath = QDir::currentPath();
+    QString filterFile = "文本文件(*.txt);;二进制文件(*.bin *.dat);;所有文件(*.*)";
+
+    QString saveFileName = QFileDialog::getSaveFileName(this,"保存文件",curPath,filterFile);
+    if(saveFileName.isEmpty())
+    {
+        return;
+    }
+
+    QFile file(saveFileName);
+    if(!file.open(QIODevice::WriteOnly))
+    {
+        return;
+    }
+
+    QTextStream textStream(&file);
+    textStream << dataRx;
     file.close();
 
 }
 
+
+void Widget::on_pushButtonSendFile_clicked()
+{
+    if (isSerialOpen != false)
+    {
+        if (isSendFile)	//发送文件数据
+        {
+            if (ui->pushButtonSendFile->text() == "发送文件")
+            {
+                ui->pushButtonSendFile->setText("停止发送");
+                SendFile();
+            }
+            else
+            {
+                ui->pushButtonSendFile->setText("发送文件");
+                timerFileSend->stop();
+            }
+        }
+        else	//发送发送框数据
+        {
+            SerialSendData(sendByteArry);
+        }
+    }
+    else
+    {
+        QMessageBox::information(this, "提示", "串口未打开");
+    }
+}
+
+void Widget::SendFile()
+{
+    /*按设置参数发送*/
+      int FrameLen = ui->lineEditFrameLen->text().toInt(); // 帧大小
+      FrameGap = ui->lineEditFrameGap->text().toInt();  // 帧间隔
+      int textlen = Widget::fileText.size();           // 文件大小
+      if (FrameGap <= 0 || textlen <= FrameLen)
+      {
+          //时间间隔为0 或 帧大小≥文件大小 则直接一次发送
+          serialPort->write(fileText.toLocal8Bit());
+          ui->pushButtonSendFile->setText("发送文件");
+      }
+      else
+      {
+          //按设定时间和长度发送
+          FrameNumber = textlen / FrameLen; // 包数量
+          lastFrameLen = textlen % FrameLen; // 最后一包数据长度
+          //进度条步进值
+          if (FrameNumber >= 100)
+          {
+              ProgressBarStep = FrameNumber / 100;
+          }
+          else
+          {
+              ProgressBarStep = 100 / FrameNumber;
+          }
+          //设置定时器
+          timerFileSend->start(FrameGap);
+      }
+}
+
+/*
+    函   数：File_TimerSend
+    描   述：发送文件定时器槽函数
+    输   入：无
+    输   出：无
+*/
+void Widget::File_TimerSend(void)
+{
+    if (FrameCount < FrameNumber)
+    {
+        serialPort->write(fileText.mid(FrameCount * FrameLen, FrameLen).toLocal8Bit());
+        FrameCount++;
+        //更新进度条
+        ui->progressBar->setValue(ProgressBarValue += ProgressBarStep);
+    }
+    else
+    {
+        if (lastFrameLen > 0)
+        {
+            serialPort->write(fileText.mid(FrameCount * FrameLen, lastFrameLen).toLocal8Bit());
+            ui->progressBar->setValue(100);
+        }
+        /*发送完毕*/
+        timerFileSend->stop();
+        FrameCount = 0;
+        ProgressBarValue = 0;
+        FrameNumber = 0;
+        lastFrameLen = 0;
+        QMessageBox::information(this, "提示", "发送完成");
+        ui->progressBar->setValue(0);
+        ui->pushButtonSendFile->setText("发送文件");
+    }
+}

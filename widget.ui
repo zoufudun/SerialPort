@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>648</width>
-    <height>642</height>
+    <height>697</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -507,7 +507,7 @@ border-color: rgb(85, 255, 127);</string>
      <string>清空发送区</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QComboBox" name="comboBoxSendData">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -753,176 +753,272 @@ border-color: rgb(85, 255, 127);</string>
     </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="pushButtonClrCount">
-   <property name="geometry">
-    <rect>
-     <x>550</x>
-     <y>610</y>
-     <width>80</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>清空计数</string>
-   </property>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>300</x>
-     <y>610</y>
-     <width>111</width>
-     <height>20</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <property name="spacing">
-     <number>30</number>
-    </property>
-    <property name="sizeConstraint">
-     <enum>QLayout::SetMaximumSize</enum>
-    </property>
-    <item>
-     <widget class="QLabel" name="label_8">
-      <property name="text">
-       <string>接收字节数：</string>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="labelRecvBytes">
-      <property name="text">
-       <string>0</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="layoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>420</x>
-     <y>610</y>
-     <width>121</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <property name="spacing">
-     <number>30</number>
-    </property>
-    <item>
-     <widget class="QLabel" name="labelSendBytesTXT">
-      <property name="text">
-       <string>发送字节数：</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QLabel" name="labelSendBytes">
-      <property name="text">
-       <string>0</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
-  </widget>
   <widget class="QGroupBox" name="groupBox_6">
    <property name="geometry">
     <rect>
      <x>10</x>
      <y>530</y>
      <width>621</width>
-     <height>71</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="title">
     <string>文件发送</string>
    </property>
-   <widget class="QProgressBar" name="progressBar">
+   <widget class="QWidget" name="layoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>15</y>
+      <width>491</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_9">
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_7">
+       <item>
+        <widget class="QLineEdit" name="lineEditFilePath"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonOpenFile">
+         <property name="text">
+          <string>打开文件</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_8">
+       <item>
+        <widget class="QPushButton" name="pushButtonSendFile">
+         <property name="text">
+          <string>发送文件</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonStopSendFile">
+         <property name="text">
+          <string>停止发送</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
-      <width>91</width>
-      <height>23</height>
+      <y>21</y>
+      <width>111</width>
+      <height>31</height>
      </rect>
     </property>
-    <property name="value">
-     <number>0</number>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_10">
+     <item>
+      <widget class="QProgressBar" name="progressBar">
+       <property name="value">
+        <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_6">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>18</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
    </widget>
-   <widget class="QLineEdit" name="lineEdit">
+   <widget class="QWidget" name="layoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>110</x>
-      <y>30</y>
-      <width>231</width>
-      <height>21</height>
+      <x>450</x>
+      <y>70</y>
+      <width>161</width>
+      <height>24</height>
      </rect>
     </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_13">
+     <item>
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>文件大小：</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditFileSize"/>
+     </item>
+    </layout>
    </widget>
-   <widget class="QPushButton" name="pushButtonOpenFile">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>30</y>
-      <width>80</width>
-      <height>21</height>
+      <x>10</x>
+      <y>70</y>
+      <width>171</width>
+      <height>24</height>
      </rect>
     </property>
-    <property name="text">
-     <string>打开文件</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_11">
+     <item>
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>帧大小（Byte）：</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditFrameLen"/>
+     </item>
+    </layout>
    </widget>
-   <widget class="QPushButton" name="pushButtonSendFile">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>30</y>
-      <width>80</width>
-      <height>21</height>
+      <x>230</x>
+      <y>70</y>
+      <width>164</width>
+      <height>24</height>
      </rect>
     </property>
-    <property name="text">
-     <string>发送文件</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButtonSendFile_2">
-    <property name="geometry">
-     <rect>
-      <x>530</x>
-      <y>30</y>
-      <width>80</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>停止发送</string>
-    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_12">
+     <item>
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>帧间隔（ms）：</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditFrameGap"/>
+     </item>
+    </layout>
    </widget>
   </widget>
-  <widget class="QLabel" name="labelSerialSta">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>610</y>
-     <width>271</width>
-     <height>16</height>
+     <y>660</y>
+     <width>611</width>
+     <height>24</height>
     </rect>
    </property>
-   <property name="text">
-    <string>欢迎</string>
-   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_6">
+    <item>
+     <widget class="QLabel" name="labelSerialSta">
+      <property name="text">
+       <string>欢迎</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>17</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_4">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="spacing">
+           <number>30</number>
+          </property>
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMaximumSize</enum>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_8">
+            <property name="text">
+             <string>接收字节数：</string>
+            </property>
+            <property name="scaledContents">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelRecvBytes">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <property name="spacing">
+           <number>30</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="labelSendBytesTXT">
+            <property name="text">
+             <string>发送字节数：</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelSendBytes">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>18</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButtonClrCount">
+        <property name="text">
+         <string>清空计数</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <zorder>groupBox_5</zorder>
   <zorder>textEditSend</zorder>
   <zorder>groupBox_6</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>pushButtonClrCount</zorder>
   <zorder>layoutWidget</zorder>
   <zorder>groupBox</zorder>
   <zorder>groupBox_2</zorder>
@@ -936,7 +1032,6 @@ border-color: rgb(85, 255, 127);</string>
   <zorder>checkBoxWrap</zorder>
   <zorder>textEditRecv</zorder>
   <zorder>layoutWidget</zorder>
-  <zorder>labelSerialSta</zorder>
  </widget>
  <resources>
   <include location="resource.qrc"/>
