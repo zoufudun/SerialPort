@@ -894,7 +894,6 @@ void Widget::on_pushButtonOpenFile_clicked()
         return;
     }
 
-
     /*判断文件类型*/
     int type = 0;
     QMimeDatabase db;
@@ -939,13 +938,13 @@ void Widget::on_pushButtonOpenFile_clicked()
     }
 
     //显示文件大小信息
-    QString info = QString("%1%2").arg("文件大小为：").arg(fileText.length());
+    QString info = QString("%1").arg(fileText.length());
     ui->lineEditFileSize->clear();
     ui->lineEditFileSize->setText(info);
     //显示文件内容
     if (ui->radioButtonTxHex->isChecked())
     {
-        ui->textEditSend->setPlainText(fileText.toUtf8().toHex(' ').toUpper());
+        ui->textEditSend->setPlainText(fileText.toLocal8Bit().toHex(' ').toUpper());
     }
     else
     {
@@ -1028,14 +1027,16 @@ void Widget::on_pushButtonSendFile_clicked()
 void Widget::SendFile()
 {
     /*按设置参数发送*/
-      int FrameLen = ui->lineEditFrameLen->text().toInt(); // 帧大小
-      FrameGap = ui->lineEditFrameGap->text().toInt();  // 帧间隔
-      int textlen = Widget::fileText.size();           // 文件大小
+      FrameLen = ui->lineEditFrameLen->text().toInt();  // 帧大小
+      FrameGap = ui->lineEditFrameGap->text().toInt();      // 帧间隔
+      int textlen = Widget::fileText.size();                // 文件大小
       if (FrameGap <= 0 || textlen <= FrameLen)
       {
           //时间间隔为0 或 帧大小≥文件大小 则直接一次发送
           serialPort->write(fileText.toLocal8Bit());
-          ui->pushButtonSendFile->setText("发送文件");
+          //ui->pushButtonSendFile->setText("发送文件");
+          QMessageBox::information(this, "提示", "文件发送完成");
+
       }
       else
       {
