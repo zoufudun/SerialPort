@@ -276,7 +276,7 @@ void Widget::TimerEvent(void)
 
     /*获取字体磅值转换为像素值*/
     int fontsize = ui->comboBoxProtNum->font().pointSize();//获取字体的磅值
-    ui->comboBoxProtNum->view()->setFixedWidth(fontsize * maxlen * 0.75);//设置像素值
+    ui->comboBoxProtNum->view()->setFixedWidth(fontsize * maxlen * 1.75);//设置像素值
 
 
 }
