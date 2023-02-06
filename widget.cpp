@@ -378,6 +378,32 @@ void Widget::on_pushButtonOpen_clicked()
            ui->labelSerialSta->setStyleSheet("color:green");
         }
 
+
+        //当打开串口后，检测到自动发送已经使能后，开启自动发送
+        if(ui->checkBoxRepeatTx->isChecked())
+        {
+            /*获取设定时间*/
+            int time = ui->spinBoxTime->text().toInt();
+            if (time > 0)
+            {
+                timerSend->start(time);
+                ui->spinBoxTime->setEnabled(false);
+            }
+            else
+            {
+                QMessageBox::warning(this, "警告", "时间必须大于0");
+                ui->spinBoxTime->setEnabled(true);
+                ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+            }
+        }
+        else
+        {
+            /*停止发送*/
+            timerSend->stop();
+            ui->spinBoxTime->setEnabled(true);
+            //ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
+        }
+
         ui->comboBoxProtNum->setEnabled(false);
         ui->comboBoxBaudRate->setEnabled(false);
         ui->comboBoxDataBits->setEnabled(false);
@@ -392,6 +418,10 @@ void Widget::on_pushButtonOpen_clicked()
     {
         isSerialOpen = false;
         serialPort->close();
+        /*停止定时发送*/
+        timerSend->stop();
+        ui->spinBoxTime->setEnabled(true);
+
         //serialPort->deleteLater();//删除串口对象
         ui->comboBoxProtNum->setEnabled(true);
         ui->comboBoxBaudRate->setEnabled(true);
@@ -845,6 +875,7 @@ void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
 //        }
 //        return;
 //    }
+
     /*判断勾选状态*/
     if (arg1 == Qt::Checked)
     {
