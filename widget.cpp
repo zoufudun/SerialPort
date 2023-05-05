@@ -41,6 +41,7 @@ Widget::Widget(QWidget *parent)
     ProgressBarValue = 0;
 
     timer = new QTimer(this);
+    timerRecRead = new QTimer(this);
 
     timer->start(500);
 
@@ -68,7 +69,14 @@ Widget::Widget(QWidget *parent)
 
     serialPort = new QSerialPort(this);
 
-    connect(serialPort,SIGNAL(readyRead()),this,SLOT(RecvData()));
+    //connect(serialPort,SIGNAL(readyRead()),this,SLOT(RecvData()));
+    connect(serialPort,&QSerialPort::readyRead,this,[&]()
+            {
+                timerRecRead->start(100);
+                recBuffer.append(serialPort->readAll());
+            });
+    connect(timerRecRead,&QTimer::timeout,this,&Widget::RecvData);
+
 
     //选中发送的历史数据的信号槽：将选中的发送历史数据填入到发送文本框中。
     connect(ui->comboBoxSendData,&QComboBox::textActivated,this,[&](const QString &text){
@@ -404,6 +412,7 @@ void Widget::on_pushButtonOpen_clicked()
             //ui->checkBoxRepeatTx->setCheckState(Qt::Unchecked);
         }
 
+
         ui->comboBoxProtNum->setEnabled(false);
         ui->comboBoxBaudRate->setEnabled(false);
         ui->comboBoxDataBits->setEnabled(false);
@@ -418,6 +427,8 @@ void Widget::on_pushButtonOpen_clicked()
     {
         isSerialOpen = false;
         serialPort->close();
+
+        //当关闭串口后，检测到自动发送已经使能后，停止自动发送
         /*停止定时发送*/
         timerSend->stop();
         ui->spinBoxTime->setEnabled(true);
@@ -504,14 +515,18 @@ void Widget::RecvData(void)
     }
 }
 */
+
 void Widget::RecvData(void)
 {
     qDebug() << "Recv Data";
+    timerRecRead->stop();
     if(ui->checkBoxStop->checkState() != Qt::Checked)
     {
         //qDebug() << "Recv Data";
-        QByteArray recBuf;
-        recBuf = serialPort->readAll();
+//        QByteArray recBuf;
+//        recBuf = serialPort->readAll();
+        QByteArray recBuf = recBuffer;
+        recBuffer.clear();
         QString myStrTemp ;//= QString::fromLocal8Bit(recBuf);
         if(!recBuf.isEmpty())
         {

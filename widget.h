@@ -29,12 +29,14 @@ private:
     QTimer *timer;
     QTimer *timerSend;
     QTimer *timerFileSend;
+    QTimer *timerRecRead;
     QStringList lastPortStringList;
     QSerialPort *serialPort;
     QStringList serialDevice;
     QButtonGroup *RecGroupButton;
     QButtonGroup *TxGroupButton;
     QByteArray sendByteArry;
+    QByteArray recBuffer;
     QString SendTextEditStr;
     QString fileText;
     bool isSendFile;
