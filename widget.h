@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include <QTime>
 #include <QCheckBox>
+#include "SerialEvent.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -24,6 +25,8 @@ class Widget : public QWidget
 public:
     Widget(QWidget *parent = nullptr);
     ~Widget();
+
+    SerialEvent *mySerialEvent;
 
 private:
     Ui::Widget *ui;
@@ -53,11 +56,14 @@ private:
     bool isSerialOpen;
     bool sendTextChangedFlag;
 
+
+
 public:
     void setDelay(int ms,int pixelSize);  //设置滚动延迟,多少ms滚动多少像素点
 
     void setText2(QString text,QRgb textColor,float speed=0.70,int blankSuffix=20); //设置字体,调用该函数后,将会自动启动定时器来滚动字幕
     void SendFile();
+    QStringList SerialScan(void);
 
 
 private slots:

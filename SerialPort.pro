@@ -16,6 +16,7 @@ SOURCES += \
     widget.cpp
 
 HEADERS += \
+    SerialEvent.h \
     widget.h
 
 FORMS += \

@@ -16,6 +16,7 @@
 #include <QTextStream>
 #include <QMimeData>
 #include <QMimeDatabase>
+#include "SerialEvent.h"
 
 
 Widget::Widget(QWidget *parent)
@@ -40,7 +41,7 @@ Widget::Widget(QWidget *parent)
         /* 关闭文件 */
         file.close();
     }
-
+    ui->comboBoxProtNum->addItems(SerialScan());
     ui->comboBoxProtNum->installEventFilter(this);
     RecvBytes = 0;
     TxBytes= 0;
@@ -61,6 +62,8 @@ Widget::Widget(QWidget *parent)
     timer->start(500);
 
     //connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);
+
+
 
     timerFileSend = new QTimer(this);
     connect(timerFileSend,SIGNAL(timeout()),this,SLOT(File_TimerSend()));
@@ -84,7 +87,46 @@ Widget::Widget(QWidget *parent)
 
     serialPort = new QSerialPort(this);
 
+    mySerialEvent = new SerialEvent();
+    // 串口插入处理
+    connect(mySerialEvent, &SerialEvent::comDevArriaval, this , [=](){
+        ui->comboBoxProtNum->clear();
+        ui->comboBoxProtNum->addItems(SerialScan());
+    });
+    // 串口拔出处理
+    connect(mySerialEvent, &SerialEvent::comDevRemoveComplete, this , [=](QString devName){
+        // 打开串口时串口变化 如果处于打开状态的端口被拔出则重置串口状态
+        if(isSerialOpen)
+        {
+            qDebug() << "狂插吕赟淫穴";
+            if(serialDevice.at(ui->comboBoxProtNum->currentIndex()) == devName)
+            {
+                isSerialOpen = false;
+                serialPort->close();
 
+                //ui->spinBoxTime->setEnabled(true);
+
+                ui->comboBoxProtNum->setEnabled(true);
+                ui->comboBoxBaudRate->setEnabled(true);
+                ui->comboBoxDataBits->setEnabled(true);
+                ui->comboBoxParity->setEnabled(true);
+                ui->comboBoxStopBits->setEnabled(true);
+                ui->comboBoxFlowCtr->setEnabled(true);
+                ui->pushButtonOpen->setText("打开串口");
+                //ui->labelSerialSta->setText("串口已关闭！！！");
+                ui->label_status->setPixmap(QPixmap(":/Image/Image/OFF.png"));
+                //ui->label_status->setProperty("isOn",false);
+                //ui->label_status->style()->polish(ui->label_status);
+                QString sm = "串口[%1] DEVICEREMOVECOMPLETE";
+                QString status = sm.arg(serialPort->portName());
+                ui->labelSerialSta->setText(status);
+                ui->labelSerialSta->setStyleSheet("color:red");
+                QMessageBox::warning(this, "串口连接错误", "<font size=\"4\">当前串口已关闭</font>");
+            }
+        }
+        ui->comboBoxProtNum->clear(); // 清空串口复选框
+        ui->comboBoxProtNum->addItems(SerialScan());
+    });
 
     //connect(serialPort,SIGNAL(readyRead()),this,SLOT(RecvData()));
     connect(serialPort,&QSerialPort::readyRead,this,[&]()
@@ -214,9 +256,6 @@ Widget::Widget(QWidget *parent)
 
     });
 
-
-
-
 //    connect(ui->radioButtonTxASCII,QOverload<bool>::of(&QRadioButton::toggled),this,[=](bool checked){
 
 //        //asccii与hex转换
@@ -233,7 +272,6 @@ Widget::Widget(QWidget *parent)
 //            ui->textEditSend->document()->setPlainText(sendByteArry);
 //        }
 //    });
-
 
 
     // 样式表
@@ -303,27 +341,42 @@ void Widget::TimerEvent(void)
 
 }
 
+QStringList Widget::SerialScan(void)
+{
+    QStringList newPortStringList;
+    //int maxlen = 0;/* 获取最长字符串 */
+    newPortStringList.clear();
+    serialDevice.clear();
+    foreach (const QSerialPortInfo &info, QSerialPortInfo::availablePorts())
+    {
+        newPortStringList <<  info.portName() + ':' + info.description();
+        serialDevice << info.portName();
+    }
+    return newPortStringList;
+}
+
+
 bool Widget::eventFilter(QObject *watched, QEvent *event)
 {
-    if(event->type() == QEvent::MouseButtonPress)
-    {
-        if(watched == ui->comboBoxProtNum)
-        {
-            QStringList newPortStringList;
-            newPortStringList.clear();
-            serialDevice.clear();
-            QComboBox* comboBox = qobject_cast<QComboBox *>(watched);
-            comboBox->clear();
-            foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts())
-            {
-                newPortStringList <<  info.portName() + ':' + info.description();
-                //comboBox->addItem(info.portName());
+//    if(event->type() == QEvent::MouseButtonPress)
+//    {
+//        if(watched == ui->comboBoxProtNum)
+//        {
+//            QStringList newPortStringList;
+//            newPortStringList.clear();
+//            serialDevice.clear();
+//            QComboBox* comboBox = qobject_cast<QComboBox *>(watched);
+//            comboBox->clear();
+//            foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts())
+//            {
+//                newPortStringList <<  info.portName() + ':' + info.description();
+//                //comboBox->addItem(info.portName());
 
-                serialDevice << info.portName();
-            }
-            comboBox->addItems(newPortStringList);
-        }
-    }
+//                serialDevice << info.portName();
+//            }
+//            comboBox->addItems(newPortStringList);
+//        }
+//    }
     return QWidget::eventFilter(watched, event);
 }
 
