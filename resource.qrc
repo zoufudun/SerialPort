@@ -15,4 +15,9 @@
         <file>Image/ONOFF/ON4.png</file>
         <file>Image/ONOFF/ON5.png</file>
     </qresource>
+    <qresource prefix="/">
+        <file>QSS/lightblack.css</file>
+        <file>QSS/black.css</file>
+        <file>QSS/silvery.css</file>
+    </qresource>
 </RCC>

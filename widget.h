@@ -2,6 +2,7 @@
 #define WIDGET_H
 
 #include <QWidget>
+#include <QObject>
 #include <QTimer>
 //#include <QtSerialPort/QtSerialPort>
 #include <QSerialPort>
@@ -77,5 +78,10 @@ private slots:
     void on_pushButtonSaveFile_clicked();
     void on_pushButtonSendFile_clicked();
     void File_TimerSend(void);
+
+public slots:
+//    void showEvent(QShowEvent* e) override;
+//    void closeEvent(QCloseEvent* e) override;
+      bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
 };
 #endif // WIDGET_H

@@ -27,6 +27,21 @@ Widget::Widget(QWidget *parent)
     resize(650,700);
     setWindowTitle("SerialPort V1.0    https://github.com/zoufudun");
 
+    QFile file(":/QSS/silvery.css");
+    /* 判断文件是否存在 */
+    if (file.exists() )
+    {
+        /* 以只读的方式打开 */
+        file.open(QFile::ReadOnly);
+        /* 以字符串的方式保存读出的结果 */
+        QString styleSheet = QLatin1String(file.readAll());
+        /* 设置全局样式 */
+        qApp->setStyleSheet(styleSheet);
+        /* 关闭文件 */
+        file.close();
+    }
+
+    ui->comboBoxProtNum->installEventFilter(this);
     RecvBytes = 0;
     TxBytes= 0;
     isSerialOpen = false;
@@ -45,7 +60,7 @@ Widget::Widget(QWidget *parent)
 
     timer->start(500);
 
-    connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);
+    //connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);
 
     timerFileSend = new QTimer(this);
     connect(timerFileSend,SIGNAL(timeout()),this,SLOT(File_TimerSend()));
@@ -68,6 +83,8 @@ Widget::Widget(QWidget *parent)
     ui->comboBoxFlowCtr->setCurrentIndex(0);
 
     serialPort = new QSerialPort(this);
+
+
 
     //connect(serialPort,SIGNAL(readyRead()),this,SLOT(RecvData()));
     connect(serialPort,&QSerialPort::readyRead,this,[&]()
@@ -98,8 +115,6 @@ Widget::Widget(QWidget *parent)
     TxGroupButton->addButton(ui->radioButtonTxASCII,0);
     TxGroupButton->addButton(ui->radioButtonTxHex,1);
     ui->radioButtonTxASCII->setChecked(true);
-
-    //ui->textEditSend->setText("欢迎使用SerialPortPHD");
 
     ui->checkBoxTxNewLine->setChecked(true);
 
@@ -286,10 +301,31 @@ void Widget::TimerEvent(void)
     int fontsize = ui->comboBoxProtNum->font().pointSize();//获取字体的磅值
     ui->comboBoxProtNum->view()->setFixedWidth(fontsize * maxlen * 1.75);//设置像素值
 
-
 }
 
+bool Widget::eventFilter(QObject *watched, QEvent *event)
+{
+    if(event->type() == QEvent::MouseButtonPress)
+    {
+        if(watched == ui->comboBoxProtNum)
+        {
+            QStringList newPortStringList;
+            newPortStringList.clear();
+            serialDevice.clear();
+            QComboBox* comboBox = qobject_cast<QComboBox *>(watched);
+            comboBox->clear();
+            foreach (QSerialPortInfo info, QSerialPortInfo::availablePorts())
+            {
+                newPortStringList <<  info.portName() + ':' + info.description();
+                //comboBox->addItem(info.portName());
 
+                serialDevice << info.portName();
+            }
+            comboBox->addItems(newPortStringList);
+        }
+    }
+    return QWidget::eventFilter(watched, event);
+}
 
 
 void Widget::on_pushButtonOpen_clicked()
@@ -297,8 +333,16 @@ void Widget::on_pushButtonOpen_clicked()
     if(ui->pushButtonOpen->text() == QString("打开串口"))
     {
         QString dev = serialDevice.at(ui->comboBoxProtNum->currentIndex());
+        if(dev.isNull())
+        {
+            return;
+        }
         serialPort->setPortName(dev);
-        //serialPort->setPortName(ui->comboBoxProtNum->currentText());
+        //serialPort->setPortName(QString::number(ui->comboBoxProtNum->currentIndex()));
+//        QSerialPortInfo portInfo (ui->comboBoxProtNum->currentText());
+//        serialPort->setPort(portInfo);
+
+//        serialPort->setPortName(ui->comboBoxProtNum->currentText());
         serialPort->setBaudRate(ui->comboBoxBaudRate->currentText().toInt());
         switch (ui->comboBoxDataBits->currentText().toInt())
         {
@@ -518,11 +562,9 @@ void Widget::RecvData(void)
 
 void Widget::RecvData(void)
 {
-    qDebug() << "Recv Data";
     timerRecRead->stop();
     if(ui->checkBoxStop->checkState() != Qt::Checked)
     {
-        //qDebug() << "Recv Data";
 //        QByteArray recBuf;
 //        recBuf = serialPort->readAll();
         QByteArray recBuf = recBuffer;
@@ -1136,3 +1178,6 @@ void Widget::File_TimerSend(void)
         ui->pushButtonSendFile->setText("发送文件");
     }
 }
+
+
+
