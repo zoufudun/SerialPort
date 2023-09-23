@@ -63,7 +63,7 @@ public:
 
     void setText2(QString text,QRgb textColor,float speed=0.70,int blankSuffix=20); //设置字体,调用该函数后,将会自动启动定时器来滚动字幕
     void SendFile();
-    QStringList SerialScan(void);
+
 
 
 private slots:
@@ -89,5 +89,6 @@ public slots:
 //    void showEvent(QShowEvent* e) override;
 //    void closeEvent(QCloseEvent* e) override;
       bool eventFilter(QObject *watched, QEvent *event) Q_DECL_OVERRIDE;
+      QStringList SerialScan(void);
 };
 #endif // WIDGET_H

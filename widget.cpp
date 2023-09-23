@@ -61,9 +61,7 @@ Widget::Widget(QWidget *parent)
 
     timer->start(500);
 
-    //connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);
-
-
+    //connect(timer,&QTimer::timeout,this,&Widget::TimerEvent);//定时刷新串口
 
     timerFileSend = new QTimer(this);
     connect(timerFileSend,SIGNAL(timeout()),this,SLOT(File_TimerSend()));
@@ -85,20 +83,26 @@ Widget::Widget(QWidget *parent)
     ui->comboBoxStopBits->setCurrentIndex(0);
     ui->comboBoxFlowCtr->setCurrentIndex(0);
 
+    ui->spinBoxTime->hide();
+    ui->label_ms->hide();
+
     serialPort = new QSerialPort(this);
 
     mySerialEvent = new SerialEvent();
+
+    connect(timer,&QTimer::timeout,this,&Widget::SerialScan);//定时刷新串口
+
     // 串口插入处理
     connect(mySerialEvent, &SerialEvent::comDevArriaval, this , [=](){
         ui->comboBoxProtNum->clear();
         ui->comboBoxProtNum->addItems(SerialScan());
     });
+
     // 串口拔出处理
     connect(mySerialEvent, &SerialEvent::comDevRemoveComplete, this , [=](QString devName){
         // 打开串口时串口变化 如果处于打开状态的端口被拔出则重置串口状态
         if(isSerialOpen)
         {
-            qDebug() << "狂插吕赟淫穴";
             if(serialDevice.at(ui->comboBoxProtNum->currentIndex()) == devName)
             {
                 isSerialOpen = false;
@@ -113,15 +117,12 @@ Widget::Widget(QWidget *parent)
                 ui->comboBoxStopBits->setEnabled(true);
                 ui->comboBoxFlowCtr->setEnabled(true);
                 ui->pushButtonOpen->setText("打开串口");
-                //ui->labelSerialSta->setText("串口已关闭！！！");
                 ui->label_status->setPixmap(QPixmap(":/Image/Image/OFF.png"));
-                //ui->label_status->setProperty("isOn",false);
-                //ui->label_status->style()->polish(ui->label_status);
-                QString sm = "串口[%1] DEVICEREMOVECOMPLETE";
+                QString sm = "串口[%1] 设备被移除";
                 QString status = sm.arg(serialPort->portName());
                 ui->labelSerialSta->setText(status);
                 ui->labelSerialSta->setStyleSheet("color:red");
-                QMessageBox::warning(this, "串口连接错误", "<font size=\"4\">当前串口已关闭</font>");
+                QMessageBox::warning(this, "串口连接错误", "<font size=\"4\">当前串口已拔出</font>");
             }
         }
         ui->comboBoxProtNum->clear(); // 清空串口复选框
@@ -993,6 +994,8 @@ void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
         time = ui->spinBoxTime->text().toInt();
         if (time > 0)
         {
+            ui->spinBoxTime->show();
+            ui->label_ms->show();
             timerSend->start(time);
             ui->spinBoxTime->setEnabled(false);
         }
@@ -1005,6 +1008,8 @@ void Widget::on_checkBoxRepeatTx_stateChanged(int arg1)
     }
     else
     {
+        ui->spinBoxTime->hide();
+        ui->label_ms->hide();
         /*停止发送*/
         timerSend->stop();
         ui->spinBoxTime->setEnabled(true);

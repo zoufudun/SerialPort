@@ -40,7 +40,7 @@ background-color: green;
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>181</width>
+     <width>191</width>
      <height>241</height>
     </rect>
    </property>
@@ -332,7 +332,7 @@ background-color: green;
     <rect>
      <x>10</x>
      <y>250</y>
-     <width>181</width>
+     <width>191</width>
      <height>111</height>
     </rect>
    </property>
@@ -552,8 +552,8 @@ border-color: rgb(85, 255, 127);</string>
     <rect>
      <x>10</x>
      <y>370</y>
-     <width>181</width>
-     <height>151</height>
+     <width>191</width>
+     <height>161</height>
     </rect>
    </property>
    <property name="title">
@@ -565,7 +565,7 @@ border-color: rgb(85, 255, 127);</string>
       <x>10</x>
       <y>20</y>
       <width>171</width>
-      <height>121</height>
+      <height>131</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -614,7 +614,7 @@ border-color: rgb(85, 255, 127);</string>
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_7">
+        <widget class="QLabel" name="label_ms">
          <property name="text">
           <string>ms</string>
          </property>
